@@ -366,10 +366,22 @@ RCT_EXPORT_METHOD(openSettings:(RCTPromiseResolveBlock)resolve
   }];
 }
 
-RCT_EXPORT_METHOD(check:(NSString *)permission
+RCT_EXPORT_METHOD(check:
+#ifdef RCT_NEW_ARCH_ENABLED
+                  (NSString *)
+#else
+                  (RNPermission)
+#endif
+                 permission
                  resolve:(RCTPromiseResolveBlock)resolve
                  reject:(RCTPromiseRejectBlock)reject) {
-  id<RNPermissionHandler> handler = [self handlerForPermission:permission];
+  id<RNPermissionHandler> handler = [self handlerForPermission:
+#ifdef RCT_NEW_ARCH_ENABLED
+                                     [RCTConvert RNPermission:permission]
+#else
+                                     permission
+#endif
+                                     ];
   NSString *lockId = [self lockHandler:handler];
 
   [handler checkWithResolver:^(RNPermissionStatus status) {
@@ -381,10 +393,22 @@ RCT_EXPORT_METHOD(check:(NSString *)permission
   }];
 }
 
-RCT_EXPORT_METHOD(request:(NSString *)permission
+RCT_EXPORT_METHOD(request:
+#ifdef RCT_NEW_ARCH_ENABLED
+                  (NSString *)
+#else
+                  (RNPermission)
+#endif
+                 permission
                  resolve:(RCTPromiseResolveBlock)resolve
                  reject:(RCTPromiseRejectBlock)reject) {
-  id<RNPermissionHandler> handler = [self handlerForPermission:permission];
+    id<RNPermissionHandler> handler = [self handlerForPermission:
+  #ifdef RCT_NEW_ARCH_ENABLED
+                                       [RCTConvert RNPermission:permission]
+  #else
+                                       permission
+  #endif
+                                       ];
   NSString *lockId = [self lockHandler:handler];
 
   [handler requestWithResolver:^(RNPermissionStatus status) {
@@ -488,12 +512,13 @@ RCT_EXPORT_METHOD(requestLocationAccuracy:(NSString * _Nonnull)purposeKey
     reject(@"RNPermissions:shouldShowRequestPermissionRationale", @"shouldShowRequestPermissionRationale is not supported on iOS", nil);
 }
 
-- (facebook::react::ModuleConstants<JS::NativePermissionsModule::Constants::Builder>)getConstants { 
+
+#if RCT_NEW_ARCH_ENABLED
+
+- (facebook::react::ModuleConstants<JS::NativePermissionsModule::Constants::Builder>)getConstants {
     return [self constantsToExport];
 }
 
-
-#if RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {
